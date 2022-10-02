@@ -1,0 +1,78 @@
+{
+    "data": {
+        "module": "data_loaders.cats_and_dogs.data_loader",
+        "class_name": "CatsAndDogsDataModule",
+        "object_key": "data",
+        "params": {
+            "data_dir": "./data/PetImages",
+            "batch_size": 64
+        }
+    },
+    "pytorch_lightning_module": {
+        "module": "trainers.classifier.base_classifier",
+        "class_name": "LightningClassificationModule",
+        "object_key": "pl_model",
+        "params": {
+            "classifier": {
+                "module": "models.vit_pytorch.vit",
+                "class_name": "ViT",
+                "object_key": "classifier",
+                "params": {
+                    "image_size": 224,
+                    "patch_size": 32,
+                    "num_classes": 2,
+                    "dim": 128,
+                    "depth": 6,
+                    "heads": 8,
+                    "mlp_dim": 256
+                }
+            },
+            "optimizers": {
+                "optimizer": {
+                    "module": "torch.optim",
+                    "class_name": "Adam",
+                    "object_key": "optimizer",
+                    "params": {
+                        "lr": 0.001,
+                        "betas": [
+                            0.5,
+                            0.999
+                        ],
+                        "params": {
+                            "function_call": "parameters",
+                            "reference_key": "classifier",
+                            "params": {}
+                        }
+                    }
+                },
+                "lr_scheduler": {
+                    "module": "torch.optim.lr_scheduler",
+                    "class_name": "StepLR",
+                    "params": {
+                        "optimizer": "{optimizer}",
+                        "step_size": 1,
+                        "gamma": 0.7
+                    }
+                }
+            }
+        }
+    },
+    "trainer": {
+        "module": "pytorch_lightning",
+        "class_name": "Trainer",
+        "params": {
+            "gpus": 1,
+            "max_epochs": 10
+
+        },
+        "method_args": [
+            {
+                "function": "fit",
+                "params": {
+                    "model": "{pl_model}",
+                    "datamodule": "{data}"
+                }
+            }
+        ]
+    }
+}
